@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define SIZE 1000
 
 // Function prototypes
@@ -7,77 +8,54 @@ int getSummation(int move, int **option, int nopts[], int target_sum);
 void printSubset(int move, int summation, int target_sum, int *hasSubset, int **option, int nopts[]);
 void findSubsets(int numbers[], int N, int target_sum);
 
-int main(){
+int main() {
+    int num_of_sets; // To store the number of test sets
+    FILE *fp = fopen("input.txt", "r"); // Open the input file in read mode
 
-	// To store the number of test sets
-    int num_of_sets;
+    if (!fp) {
+        printf("Failed to open file\n");
+        return 1;
+    }
 
-	// File pointer for file operations
-    FILE *fp; 
-    
-	// Open the input file in read mode
-    fp = fopen("input.txt","r"); 
+    fscanf(fp, "%d\n", &num_of_sets); // Read the number of sets from the file
 
-	// To temporarily hold a character from the file
-    char ch; 
-
-    // Read the number of sets from the file
-    fscanf(fp,"%d\n",&num_of_sets); 
-
-    // Loop through each set
-    for(int i = 0; i<num_of_sets;i++){ 
-		
-		// Read the target sum for the current set and store it in target_sum
-        int target_sum; 
-        fscanf(fp,"%d\n",&target_sum); 
-
-        // Array to hold the numbers of the current set
-        int numbers[SIZE]; 
-
-		// Temporarily store each read value
-        int value; 
-		
-		// Counter for the number of elements in the set
-        int numbers_size = 0; 
-
-        // Read numbers until a newline or EOF is encountered
-        while(fscanf(fp,"%d",&value) == 1){
-
-			// Store the number in the array
-            numbers[numbers_size++] = value; 
-
-			// Get the next character to check for space or newline
-            ch = fgetc(fp); 
-            
-            // Ignore any spaces or tabs after reading a number
-            while(ch == ' ' || ch =='\t'){
-                ch = fgetc(fp);
-            }
-            if(ch == ' ' || ch == EOF){
-                break;
-            }
-
-			// Put the character back if it's not a space or EOF
-            ungetc(ch,fp); 
+    for (int i = 0; i < num_of_sets; i++) {
+        int target_sum; // Variable to store target sum for the current set
+        if (fscanf(fp, "%d\n", &target_sum) != 1) {
+            printf("Error reading target sum for set %d\n", i + 1);
+            continue;
         }
 
-        // Print the set number and the numbers
-        printf("\nSet %d:\n",i+1);
-        printf("S = { ");  
+        int numbers[SIZE]; 
+        int numbers_size = 0; 
+        char line[2048]; // Buffer to hold the line with numbers
 
-        for(int j = 0; j<numbers_size;j++){
-            printf("%d ",numbers[j]);
+        if (fgets(line, sizeof(line), fp) == NULL) {
+            printf("Error reading numbers for set %d\n", i + 1);
+            continue;
+        }
+
+        char *token = strtok(line, " \n");
+        // Process all numbers in the line
+        while (token != NULL) {
+            numbers[numbers_size++] = atoi(token);
+            token = strtok(NULL, " \n");
+        }
+
+        printf("\nSet %d:\n", i+1);
+        printf("S = { ");
+        for (int j = 0; j < numbers_size; j++) {
+            printf("%d ", numbers[j]);
         }
         printf("}\n");
-
-        // Print the target sum
-        printf("Target Sum: %d\n",target_sum);
+        printf("Target Sum: %d\n", target_sum);
         printf("Subsets: \n");
 
-
-        // Find and print subsets that sum to the target
-        findSubsets(numbers,numbers_size,target_sum); 
+        findSubsets(numbers, numbers_size, target_sum); 
     }
+
+    fclose(fp); // Close the file
+    return 0;
 }
 
 // Calculate the summation of the current subset
